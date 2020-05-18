@@ -102,6 +102,19 @@ add_custom_command(TARGET native-lib POST_BUILD
         )
 endif()
 
+if(OPENXR)
+target_sources(
+    native-lib
+    PUBLIC
+    src/openxr/cpp/DeviceDelegateOpenXR.cpp
+    )
+add_custom_command(TARGET native-lib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_SOURCE_DIR}/../third_party/ovr_openxr_mobile_sdk/OpenXR/Libs/Android/${ANDROID_ABI}/Release/libopenxr_oculus.so
+        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libopenxr_oculus.so
+        )
+endif()
+
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
 # default, you only need to specify the name of the public NDK library
@@ -127,6 +140,10 @@ set_target_properties(ovrplatform-lib PROPERTIES IMPORTED_LOCATION
 add_library(wavevr-lib SHARED IMPORTED)
 set_target_properties(wavevr-lib PROPERTIES IMPORTED_LOCATION
                       ${CMAKE_SOURCE_DIR}/../third_party/wavesdk/build/wvr_client/jni/${ANDROID_ABI}/libwvr_api.so )
+
+add_library(openxr-lib SHARED IMPORTED)
+set_target_properties(openxr-lib PROPERTIES IMPORTED_LOCATION
+                      ${CMAKE_SOURCE_DIR}/../third_party/ovr_openxr_mobile_sdk/OpenXR/Libs/Android/${ANDROID_ABI}/Release/libopenxr_oculus.so )
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this

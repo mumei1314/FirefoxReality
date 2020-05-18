@@ -40,6 +40,13 @@ def getUseDebugSigningOnRelease = { ->
     return false
 }
 
+def getOpenXREnabled = { ->
+    if (gradle.hasProperty("userProperties.openxr")) {
+        return gradle."userProperties.openxr"
+    }
+    return "false"
+}
+
 // Glean: Generate markdown docs for the collected metrics.
 ext.gleanGenerateMarkdownDocs = true
 ext.gleanDocsDirectory = "$rootDir/docs"
@@ -193,6 +200,20 @@ android {
             }
         }
 
+        openxr {
+            dimension "platform"
+            externalNativeBuild {
+                cmake {
+                    cppFlags " -I" + file("${project.rootDir}/third_party/OpenXR-SDK/include").absolutePath +
+                            " -I" + file("${project.rootDir}/third_party/ovr_openxr_mobile_sdk/OpenXR/Include").absolutePath +
+                            " -I" + file("${project.rootDir}/app/src/openxr/cpp").absolutePath +
+                            " -DOPENXR -DXR_USE_PLATFORM_ANDROID -DXR_USE_GRAPHICS_API_OPENGL_ES"
+                    arguments "-DVR_SDK_LIB=openxr-lib", "-DOPENXR=ON"
+                }
+            }
+            manifestPlaceholders = [ headtrackingRequired:"false", permissionToRemove:"android.permission.RECEIVE_BOOT_COMPLETED" ]
+        }
+
         noapi {
             dimension "platform"
             externalNativeBuild {
@@ -233,6 +254,8 @@ android {
                 'wavevrArm64Release',
                 'wavevrStoreArm64Debug',
                 'wavevrStoreArm64Release',
+                'openxrArm64Debug',
+                'openxrArm64Release',
                 'noapiArm64Debug',
                 'noapiArm64Release',
                 'noapiX86_64Debug',
@@ -336,6 +359,18 @@ android {
             ]
             jniLibs.srcDirs = ["${project.rootDir}/third_party/wavesdk/build/wvr_client/jni"]
             manifest.srcFile "src/wavevr/AndroidManifest.xml"
+        }
+
+        openxr {
+            java.srcDirs = [
+                    'src/openxr/java'
+            ]
+            assets.srcDirs = [
+                    'src/oculusvr/assets'
+            ]
+            res.srcDirs = [
+                    'src/oculusvr/res'
+            ]
         }
 
         picovr {
